@@ -12,56 +12,12 @@ DATA_PATH = "data/servicios.csv"
 
 st.title("🛠️ Aires FC | Panel Interno")
 
-if not os.path.exists(DATA_PATH):
+if not os.path.exists(DATA_PATH) or os.path.getsize(DATA_PATH) == 0:
     st.warning("Todavía no hay solicitudes registradas.")
     st.stop()
 
 df = pd.read_csv(DATA_PATH)
 
-total = len(df)
-pendientes = len(df[df["estatus"] == "Pendiente"])
-completados = len(df[df["estatus"] == "Completado"])
-asignados = len(df[df["estatus"] == "Asignado"])
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("Total solicitudes", total)
-col2.metric("Pendientes", pendientes)
-col3.metric("Asignadas", asignados)
-col4.metric("Completadas", completados)
-
-st.divider()
-
-st.subheader("Solicitudes registradas")
-
-st.dataframe(df, use_container_width=True)
-
-st.divider()
-
-st.subheader("Actualizar solicitud")
-
-folios = df["folio"].tolist()
-
-folio_sel = st.selectbox("Selecciona folio", folios)
-
-registro = df[df["folio"] == folio_sel].iloc[0]
-
-st.write("Cliente:", registro["nombre"])
-st.write("Servicio:", registro["servicio"])
-st.write("Fecha deseada:", registro["fecha_deseada"])
-
-tecnico = st.text_input("Técnico asignado", value=str(registro.get("tecnico", "")))
-
-estatus = st.selectbox(
-    "Estatus",
-    ["Pendiente", "Asignado", "Completado", "Cancelado", "Reprogramado"],
-    index=["Pendiente", "Asignado", "Completado", "Cancelado", "Reprogramado"].index(registro["estatus"])
-)
-
-if st.button("Guardar cambios"):
-    df.loc[df["folio"] == folio_sel, "tecnico"] = tecnico
-    df.loc[df["folio"] == folio_sel, "estatus"] = estatus
-    df.to_csv(DATA_PATH, index=False)
-
-    st.success("Solicitud actualizada correctamente.")
-    st.rerun()
+if df.empty:
+    st.warning("Todavía no hay solicitudes registradas.")
+    st.stop()
